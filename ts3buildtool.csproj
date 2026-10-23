@@ -12,11 +12,13 @@
     <Optimize>false</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -34,6 +36,8 @@
   </Target>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="nameMap.xml" />
+    <None Include="nameMap.xsd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="sims3-package-interface\s3pi\s3pi\Interfaces\Interfaces.csproj">

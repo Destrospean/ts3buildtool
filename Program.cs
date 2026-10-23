@@ -30,25 +30,37 @@ namespace S3BuildTool
 
     interface IResourceProcessor
     {
-        uint TargetType { get; }
+        uint TargetType
+        {
+            get;
+        }
+
         bool CanHandle(uint type, string name);
 
-        void Process(IPackage pkg, string resName, uint resType, string resDir, string modName,
-            Dictionary<ulong, string> nameMap, string dllPath);
+        void Process(IPackage pkg, string resName, uint resType, uint resGroup, ulong? resInstance, string resDir, string modName, Dictionary<ulong, string> nameMap, string dllPath);
     }
 
     // --- PROCESSOR IMPLEMENTATIONS ---
 
     class S3SAProcessor : IResourceProcessor
     {
-        public uint TargetType => Sims3Constants.Type_S3SA;
-        public bool CanHandle(uint type, string name) => type == TargetType;
-
-        public void Process(IPackage pkg, string resName, uint resType, string resDir, string modName,
-            Dictionary<ulong, string> nameMap, string dllPath)
+        public uint TargetType
         {
-            ulong hash = Program.HashFNV64(resName);
-            IResourceKey key = new TGIBlock(1, null, resType, 0, hash);
+            get
+            {
+                return Sims3Constants.Type_S3SA;
+            }
+        }
+
+        public bool CanHandle(uint type, string name)
+        {
+            return type == TargetType;
+        }
+
+        public void Process(IPackage pkg, string resName, uint resType, uint resGroup, ulong? resInstance, string resDir, string modName, Dictionary<ulong, string> nameMap, string dllPath)
+        {
+            ulong hash = resInstance ?? Program.HashFNV64(resName);
+            IResourceKey key = new TGIBlock(1, null, resType, resGroup, hash);
 
             if (File.Exists(dllPath))
             {
@@ -74,11 +86,20 @@ namespace S3BuildTool
 
     class STBLProcessor : IResourceProcessor
     {
-        public uint TargetType => Sims3Constants.Type_STBL;
-        public bool CanHandle(uint type, string name) => type == TargetType;
+        public uint TargetType
+        {
+            get
+            {
+                return Sims3Constants.Type_STBL;
+            }
+        }
 
-        public void Process(IPackage pkg, string resName, uint resType, string resDir, string modName,
-            Dictionary<ulong, string> nameMap, string dllPath)
+        public bool CanHandle(uint type, string name)
+        {
+            return type == TargetType;
+        }
+
+        public void Process(IPackage pkg, string resName, uint resType, uint resGroup, ulong? resInstance, string resDir, string modName, Dictionary<ulong, string> nameMap, string dllPath)
         {
             if (resName == "*.stbl")
             {
@@ -122,11 +143,11 @@ namespace S3BuildTool
             }
             else
             {
-                ulong hash = Program.HashFNV64(resName);
+                ulong hash = resInstance ?? Program.HashFNV64(resName);
                 string file = Program.FindFile(resDir, resName);
                 if (file != null)
                 {
-                    pkg.AddResource(new TGIBlock(1, null, resType, 0, hash), new MemoryStream(File.ReadAllBytes(file)),
+                    pkg.AddResource(new TGIBlock(1, null, resType, resGroup, hash), new MemoryStream(File.ReadAllBytes(file)),
                         false);
                     if (!nameMap.ContainsKey(hash)) nameMap.Add(hash, resName);
                     Program.Log($"[STBL] Added {resName} (0x{hash:X16})", ConsoleColor.DarkCyan);
@@ -138,18 +159,27 @@ namespace S3BuildTool
 
     class GenericProcessor : IResourceProcessor
     {
-        public uint TargetType => 0;
-        public bool CanHandle(uint type, string name) => true;
-
-        public void Process(IPackage pkg, string resName, uint resType, string resDir, string modName,
-            Dictionary<ulong, string> nameMap, string dllPath)
+        public uint TargetType
         {
-            ulong hash = Program.HashFNV64(resName);
+            get
+            {
+                return 0;
+            }
+        }
+
+        public bool CanHandle(uint type, string name)
+        {
+            return true;
+        }
+
+        public void Process(IPackage pkg, string resName, uint resType, uint resGroup, ulong? resInstance, string resDir, string modName, Dictionary<ulong, string> nameMap, string dllPath)
+        {
+            ulong hash = resInstance ?? Program.HashFNV64(resName);
             string file = Program.FindFile(resDir, resName);
 
             if (file != null)
             {
-                pkg.AddResource(new TGIBlock(1, null, resType, 0, hash), new MemoryStream(File.ReadAllBytes(file)),
+                pkg.AddResource(new TGIBlock(1, null, resType, resGroup, hash), new MemoryStream(File.ReadAllBytes(file)),
                     false);
                 if (!nameMap.ContainsKey(hash)) nameMap.Add(hash, resName);
                 Program.Log($"[GENERIC] Added {resName} (0x{hash:X16})", ConsoleColor.DarkGray);
@@ -383,8 +413,7 @@ namespace S3BuildTool
             IPackage pkg = Package.NewPackage(1);
             string nameMapPath = Path.Combine(resDir, "nameMap.xml");
 
-            if (!File.Exists(nameMapPath))
-                throw new FileNotFoundException($"Could not find nameMap.xml in {resDir}");
+            if (!File.Exists(nameMapPath)) throw new FileNotFoundException($"Could not find nameMap.xml in {resDir}");
 
             XDocument xml = XDocument.Load(nameMapPath);
             Dictionary<ulong, string> collectedNames = new Dictionary<ulong, string>();
@@ -393,12 +422,17 @@ namespace S3BuildTool
             {
                 string resName = res.Attribute("name")?.Value;
                 uint resType = Convert.ToUInt32(res.Attribute("type")?.Value, 16);
+                uint resGroup = Convert.ToUInt32(res.Attribute("group")?.Value ?? "0", 16);
+                ulong? resInstance = null;
+                if (res.Attribute("instance") != null)
+                {
+                    resInstance = Convert.ToUInt64(res.Attribute("instance").Value, 16);
+                }
 
-                var processor = processors.FirstOrDefault(p => resName != null && p.CanHandle(resType, resName)) ??
-                                genericProcessor;
+                var processor = processors.FirstOrDefault(p => resName != null && p.CanHandle(resType, resName)) ?? genericProcessor;
                 if (resName != null)
                 {
-                    processor.Process(pkg, resName, resType, resDir, modName, collectedNames, dllPath);
+                    processor.Process(pkg, resName, resType, resGroup, resInstance, resDir, modName, collectedNames, dllPath);
                 }
             }
 
