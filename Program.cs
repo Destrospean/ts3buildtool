@@ -1,6 +1,10 @@
-﻿using System.Xml.Linq;
-using s3pi.Interfaces;
+﻿using s3pi.Interfaces;
 using s3pi.Package;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace S3BuildTool
 {
@@ -13,7 +17,7 @@ namespace S3BuildTool
         public const ulong Fnv64Prime = 0x100000001b3;
         public const ulong Fnv64Offset = 0xcbf29ce484222325;
 
-        public static readonly Dictionary<string, byte> LocaleMap = new()
+        public static readonly Dictionary<string, byte> LocaleMap = new Dictionary<string, byte>
         {
             { "ENG_US", 0x00 }, { "CHS_CN", 0x01 }, { "CHT_CN", 0x02 }, { "CZE_CZ", 0x03 },
             { "DAN_DK", 0x04 }, { "DUT_NL", 0x05 }, { "FIN_FI", 0x06 }, { "FRE_FR", 0x07 },
@@ -119,7 +123,7 @@ namespace S3BuildTool
             else
             {
                 ulong hash = Program.HashFNV64(resName);
-                string? file = Program.FindFile(resDir, resName);
+                string file = Program.FindFile(resDir, resName);
                 if (file != null)
                 {
                     pkg.AddResource(new TGIBlock(1, null, resType, 0, hash), new MemoryStream(File.ReadAllBytes(file)),
@@ -141,7 +145,7 @@ namespace S3BuildTool
             Dictionary<ulong, string> nameMap, string dllPath)
         {
             ulong hash = Program.HashFNV64(resName);
-            string? file = Program.FindFile(resDir, resName);
+            string file = Program.FindFile(resDir, resName);
 
             if (file != null)
             {
@@ -160,7 +164,11 @@ namespace S3BuildTool
     // --- MAIN PROGRAM LOGIC ---
     class Program
     {
-        private static readonly List<IResourceProcessor> processors = [new S3SAProcessor(), new STBLProcessor()];
+        private static readonly List<IResourceProcessor> processors = new List<IResourceProcessor>
+            {
+                new S3SAProcessor(),
+                new STBLProcessor()
+            };
         private static readonly IResourceProcessor genericProcessor = new GenericProcessor();
 
         static int Main(string[] args)
@@ -178,9 +186,10 @@ namespace S3BuildTool
 
                 string modName = paramsMap["modname"];
                 string dllPath = paramsMap["dllpath"].Trim('\"');
-                
-                string? projectDir = paramsMap.TryGetValue("projectdir", out var pDir) ? pDir.Trim('\"') : null;
-                string? resDir = null;
+
+                string pDir;
+                string projectDir = paramsMap.TryGetValue("projectdir", out pDir) ? pDir.Trim('\"') : null;
+                string resDir = null;
 
                 if (!string.IsNullOrEmpty(projectDir))
                 {
@@ -191,7 +200,7 @@ namespace S3BuildTool
                 else
                 {
                     string toolDir = AppDomain.CurrentDomain.BaseDirectory;
-                    string? solutionDir = Directory.GetParent(toolDir.TrimEnd(Path.DirectorySeparatorChar))?.FullName;
+                    string solutionDir = Directory.GetParent(toolDir.TrimEnd(Path.DirectorySeparatorChar))?.FullName;
     
                     if (solutionDir != null)
                     {
@@ -230,8 +239,10 @@ namespace S3BuildTool
                 
                 Log($"Resource Directory: {resDir}", ConsoleColor.DarkGray);
 
-                string? defaultPath = paramsMap.TryGetValue("defaultpath", out var tempDefaultPath) ? tempDefaultPath : null;
-                string? skipFolders = paramsMap.TryGetValue("skip", out var tempSkipFolders) ? tempSkipFolders : null;
+                string tempDefaultPath;
+                string tempSkipFolders;
+                string defaultPath = paramsMap.TryGetValue("defaultpath", out tempDefaultPath) ? tempDefaultPath : null;
+                string skipFolders = paramsMap.TryGetValue("skip", out tempSkipFolders) ? tempSkipFolders : null;
 
                 string modsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "Electronic Arts", "The Sims 3", "Mods");
@@ -247,7 +258,7 @@ namespace S3BuildTool
                             .ToList();
                 }
 
-                string? packagePath = FindExistingModPackage(modsDir, modName, skipFolderList);
+                string packagePath = FindExistingModPackage(modsDir, modName, skipFolderList);
 
                 if (packagePath == null)
                 {
@@ -257,7 +268,7 @@ namespace S3BuildTool
                             .Replace('\\', Path.DirectorySeparatorChar);
                         if (defaultPath != null) packagePath = Path.Combine(modsDir, defaultPath, $"{modName}.package");
                         
-                        Directory.CreateDirectory(Path.GetDirectoryName(packagePath)!);
+                        Directory.CreateDirectory(Path.GetDirectoryName(packagePath));
                         Log($"No existing mod found. Creating new package at default path: {packagePath}",
                             ConsoleColor.Yellow);
                     }
@@ -299,7 +310,7 @@ namespace S3BuildTool
             }
         }
 
-        static string? FindExistingModPackage(string modsDir, string modName, List<string> skipFolders)
+        static string FindExistingModPackage(string modsDir, string modName, List<string> skipFolders)
         {
             try
             {
@@ -380,7 +391,7 @@ namespace S3BuildTool
 
             foreach (var res in xml.Descendants("resource"))
             {
-                string? resName = res.Attribute("name")?.Value;
+                string resName = res.Attribute("name")?.Value;
                 uint resType = Convert.ToUInt32(res.Attribute("type")?.Value, 16);
 
                 var processor = processors.FirstOrDefault(p => resName != null && p.CanHandle(resType, resName)) ??
@@ -414,7 +425,7 @@ namespace S3BuildTool
             pkg.AddResource(nameMapKey, nameMapRes.Stream, false);
         }
 
-        public static string? FindFile(string dir, string name)
+        public static string FindFile(string dir, string name)
         {
             return Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories)
                 .FirstOrDefault(f =>
@@ -450,7 +461,10 @@ namespace S3BuildTool
             {
                 if (arg.StartsWith("-") && arg.Contains("="))
                 {
-                    var parts = arg.Substring(1).Split(['='], 2);
+                    var parts = arg.Substring(1).Split(new[]
+                        {
+                            '='
+                        }, 2);
                     map[parts[0].ToLower()] = parts[1];
                 }
             }

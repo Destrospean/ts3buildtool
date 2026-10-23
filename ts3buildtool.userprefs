@@ -1,0 +1,19 @@
+﻿<Properties StartupItem="ts3buildtool.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Program.cs">
+    <Files>
+      <File FileName="Properties/AssemblyInfo.cs" Line="1" Column="1" />
+      <File FileName="Program.cs" Line="13" Column="6" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <RunToCursorBreakpoint file="/home/andrew/Projects/The Sims 3 Projects/Source Code/ts3buildtool/Program.cs" line="448" column="18" />
+      <RunToCursorBreakpoint file="/home/andrew/Projects/The Sims 3 Projects/Source Code/ts3buildtool/Program.cs" line="446" column="48" />
+      <RunToCursorBreakpoint file="/home/andrew/Projects/The Sims 3 Projects/Source Code/ts3buildtool/Program.cs" line="446" column="57" />
+      <RunToCursorBreakpoint file="/home/andrew/Projects/The Sims 3 Projects/Source Code/ts3buildtool/Program.cs" line="102" column="56" />
+      <RunToCursorBreakpoint file="/home/andrew/Projects/The Sims 3 Projects/Source Code/ts3buildtool/Program.cs" line="125" column="42" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
