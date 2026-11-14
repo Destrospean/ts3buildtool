@@ -187,6 +187,8 @@ namespace S3BuildTool
 
         private static readonly IResourceProcessor genericProcessor = new GenericProcessor();
 
+        public static bool IsUnix => (int)Environment.OSVersion.Platform is 4 or 6 or 128;
+
         private static int Main(string[] args)
         {
             var originalColor = Console.ForegroundColor;
@@ -262,8 +264,13 @@ namespace S3BuildTool
                     : null;
                 var skipFolders = paramsMap.TryGetValue("skip", out var tempSkipFolders) ? tempSkipFolders : null;
 
-                var modsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    "Electronic Arts", "The Sims 3", "Mods");
+                var modsDir =
+                    Path.Combine(
+                        IsUnix
+                            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                                "Documents")
+                            : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Electronic Arts",
+                        "The Sims 3", "Mods");
 
                 Log($"Building Package: {modName}", ConsoleColor.White);
 
