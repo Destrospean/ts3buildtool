@@ -1,24 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{AC8BE1AE-B4FC-45BC-8A9B-98020EC0979A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>S3BuildTool</RootNamespace>
     <AssemblyName>ts3buildtool</AssemblyName>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>false</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>6</LangVersion>
+    <ConsolePause>false</ConsolePause>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>6</LangVersion>
+    <ConsolePause>false</ConsolePause>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -36,8 +47,6 @@
   </Target>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="nameMap.xml" />
-    <None Include="nameMap.xsd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="sims3-package-interface\s3pi\s3pi\Interfaces\Interfaces.csproj">
@@ -73,5 +82,13 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
     <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="resources\nameMap.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\nameMap.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
