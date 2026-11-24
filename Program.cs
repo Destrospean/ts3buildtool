@@ -55,6 +55,12 @@ namespace S3BuildTool
             var hash = resInstance ?? Program.HashFnv64(resName);
             IResourceKey key = new TGIBlock(1, null, resType, resGroup, hash);
 
+            var dllofResNamePath = Path.Combine(Path.GetDirectoryName(dllPath)!, resName);
+            if (File.Exists(dllofResNamePath))
+            {
+                dllPath = dllofResNamePath;
+            }
+            
             if (File.Exists(dllPath))
             {
                 var script = new ScriptResource.ScriptResource(1, null);
